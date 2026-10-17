@@ -1,0 +1,15 @@
+{
+  "name": "toolgrade",
+  "version": "0.1.2",
+  "private": true,
+  "description": "Grade MCP tool definitions for agent-readiness: paste tool, JSON API and remote MCP server. Pure parsing; your tool definitions are never stored.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

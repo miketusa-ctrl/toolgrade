@@ -1,0 +1,11 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "dev.workers.mike-tusa.toolgrade/toolgrade",
+  "title": "ToolGrade",
+  "description": "Grade MCP tool definitions for agent-readiness: score, A-F grade, fixes, est. token cost.",
+  "version": "0.1.2",
+  "websiteUrl": "https://toolgrade.mike-tusa.workers.dev/",
+  "icons": [{ "src": "https://toolgrade.mike-tusa.workers.dev/favicon.svg", "mimeType": "image/svg+xml", "sizes": ["any"] }],
+  "remotes": [{ "type": "streamable-http", "url": "https://toolgrade.mike-tusa.workers.dev/mcp",
+    "headers": [{ "name": "Authorization", "description": "Optional. 'Bearer <key>' for a free monthly quota. Works without a key.", "isRequired": false, "isSecret": true }] }]
+}
