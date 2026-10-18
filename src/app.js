@@ -12,7 +12,12 @@ import { countVisitor, chargeDailyPool, chargeCounter, utcDay } from './lib/quot
 import { keyFromRequest, lookupKey, chargeKey, peekKey, issueKey, FREE_MONTHLY, _resetKeys } from './lib/keys.js';
 
 export { VERSION };
-export const GLAMA_CLAIM = JSON.stringify({ $schema: 'https://glama.ai/mcp/schemas/connector.json', claim: '<GLAMA_CLAIM_TOKEN>' });
+/** Glama connector claim body (protocol step 4/4m). The account-wide token comes ONLY from the GLAMA_CLAIM Worker secret
+ *  (`wrangler versions secret put GLAMA_CLAIM`); never hardcoded, never in [vars]. null when unset/empty → route returns 404. */
+export function glamaClaimBody(env = {}) {
+  const claim = typeof env.GLAMA_CLAIM === 'string' ? env.GLAMA_CLAIM.trim() : '';
+  return claim ? JSON.stringify({ $schema: 'https://glama.ai/mcp/schemas/connector.json', claim }) : null;
+}
 
 export const SECURITY = {
   'x-content-type-options': 'nosniff',
@@ -42,7 +47,7 @@ export function limitsFor(env = {}) {
   };
 }
 
-export function ipBucket(ip) { // IPv4 as is; IPv6 → its /64. Same output as workdayapi's (agent-ready recipe §1).
+export function ipBucket(ip) { // IPv4 as is; IPv6 → its /64. Same output as workdayapi's.
   const s = String(ip || 'unknown').trim().toLowerCase();
   if (!s.includes(':')) return s;
   if (s.includes('.')) return s.slice(s.lastIndexOf(':') + 1);
@@ -66,7 +71,7 @@ const json = (body, status = 200, headers = {}) => new Response(JSON.stringify(b
 });
 export const apiError = (status, code, message, headers = {}) => json({ error: { code, message } }, status, headers);
 
-/** Shared key gate for /api and /mcp (recipe §1). No key → anonymous; valid key → free; bad key → 401 (key never echoed). */
+/** Shared key gate for /api and /mcp. No key → anonymous; valid key → free; bad key → 401 (key never echoed). */
 export async function authenticate(request, env) {
   const k = keyFromRequest(request);
   if (k === null) return { ok: true, tier: 'anonymous' };
@@ -201,9 +206,11 @@ export async function handle(request, env, ctx) {
     return new Response('Not found', { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8', ...SECURITY } });
   }
   if (path === '/.well-known/glama.json') {
-    // Glama connector ownership claim, served at /.well-known/glama.json. Replace the placeholder with your own claim token from glama.ai.
+    // Glama connector ownership claim, served at /.well-known/glama.json. Set your own glama.ai claim token as the GLAMA_CLAIM Worker secret (or replace the placeholder, if present).
     const m = onlyGet(request); if (m) return m;
-    return new Response(request.method === 'HEAD' ? null : GLAMA_CLAIM, { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=3600', 'access-control-allow-origin': '*', ...SECURITY } });
+    const claim = glamaClaimBody(env);
+    if (!claim) return new Response(request.method === 'HEAD' ? null : 'Not found', { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8', ...SECURITY } });
+    return new Response(request.method === 'HEAD' ? null : claim, { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=3600', 'access-control-allow-origin': '*', ...SECURITY } });
   }
   if (path === '/robots.txt') {
     const m = onlyGet(request); if (m) return m;
