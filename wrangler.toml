@@ -50,7 +50,7 @@ enabled = false
 cpu_ms = 100
 
 [env.production.vars]
-PUBLIC_LAUNCH = "false"
+PUBLIC_LAUNCH = "true"
 CHECK_LIMIT_PER_MIN = "20"
 DAILY_CHECK_POOL = "5000"
 DAILY_KV_WRITES = "150"
