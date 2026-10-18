@@ -3,7 +3,7 @@
  * agent-readiness. Pure parsing: no network, no storage, no eval. Every loop is bounded (MAX_TOOLS, MAX_DEPTH,
  * MAX_NODES), so CPU per request stays small even for a 256 KB body.
  */
-export const VERSION = '0.1.2';
+export const VERSION = '0.1.3';
 export const MAX_INPUT_BYTES = 256 * 1024;
 export const MAX_TOOLS = 200;
 export const MAX_DEPTH = 8;
